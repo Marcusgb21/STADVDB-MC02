@@ -33,6 +33,7 @@ db_configs = [
 def execute_query_in_transaction(query, db_config, values=None):
     connection = mysql.connector.connect(**db_config)
     cursor = connection.cursor()
+    result = None  # Initialize result here
     try:
         # Start transaction
         connection.start_transaction(isolation_level='READ COMMITTED')
@@ -50,32 +51,40 @@ def execute_query_in_transaction(query, db_config, values=None):
         # Close cursor and connection
         cursor.close()
         connection.close()
-        return result
+    
+    return result
 
+@app.route('/')
+def index():
+    is_button_disabled = False
+    return render_template('index.html', is_button_disabled=is_button_disabled)
 
 # Read operation with search
 @app.route('/read')
 def read_data():
+    is_button_disabled = False
     search_term = request.args.get('search_term', default='', type=str)
     master_node = db_configs[0]
-    query = "SELECT * FROM mytable WHERE clinicid LIKE %s" # change mytable to correct table name
-    values = (f"%{search_term}%",)
+    query = "SELECT * FROM clinics WHERE clinicid LIKE %s" # change mytable to correct table name
+    values = (search_term,)
 
     try:
         results = execute_query_in_transaction(query, master_node, values)
-        return render_template('index.html', results=results)
+        return render_template('read.html', results=results, is_button_disabled=is_button_disabled)
     except mysql.connector.Error as err:
         return str(err)
 
 # Update operation
 @app.route('/update', methods=['POST'])
 def update_data():
+    is_button_disabled = False
     data = request.form
     master_node = db_configs[0]
-    query = "UPDATE mytable SET IsHospital=%s WHERE clinicid=%s" # change mytable to correct table name
+    query = "UPDATE clinics SET IsHospital= %s WHERE clinicid= %s" # change mytable to correct table name
     values = (data['new_value'], data['id'])
     try:
-        execute_query_in_transaction(query, master_node)
+        execute_query_in_transaction(query, master_node, values)
+        return render_template('index.html', is_button_disabled=is_button_disabled)
     except mysql.connector.Error as err:
         return str(err)
     return 'Updated successfully'
@@ -83,26 +92,29 @@ def update_data():
 # Insert operation
 @app.route('/insert', methods=['POST'])
 def insert_data():
+    is_button_disabled = False
     data = request.form
     master_node = db_configs[0]
-    query = "INSERT INTO mytable (clinicid, RegionName, IsHospital) VALUES (%s, %s, %s)" # change mytable to correct table name
-    values = (data['value1'], data['value2'], data['value3'])  # Adjust the keys as needed
+    query = "INSERT INTO clinics (clinicid, IsHospital, Province) VALUES (%s, %s, %s)" # change mytable to correct table name
+    values = (data['value1'], data['value3'], data['value2'])  # Adjust the keys as needed
     try:
         execute_query_in_transaction(query, master_node, values)
+        return render_template('index.html', is_button_disabled=is_button_disabled)
     except mysql.connector.Error as err:
         return str(err)
     return 'Inserted successfully'
 
 # Report operation
 @app.route('/report')
-def read_data():
+def generate_report():
+    is_button_disabled = False
     master_node = db_configs[0]
-    query = "SELECT count(clinicid) AS NoOfClinics FROM mytable WHERE IsHospital = 'True'" # change mytable to correct table name
+    query = "SELECT count(clinicid) AS NoOfClinics FROM clinics WHERE IsHospital = 'True'" # change mytable to correct table name
     try:
         results = execute_query_in_transaction(query, master_node)
     except mysql.connector.Error as err:
         return str(err)
-    return render_template('index.html', results1=results)
+    return render_template('report.html', results=results, is_button_disabled=is_button_disabled)
 
 
 # Function to check if a node is online
