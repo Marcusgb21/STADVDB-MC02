@@ -65,11 +65,16 @@ def read_data():
     is_button_disabled = False
     search_term = request.args.get('search_term', default='', type=str)
     master_node = db_configs[0]
+    if (not is_node_online(master_node)):
+        master_node = db_configs[1]
     query = "SELECT * FROM clinics WHERE clinicid LIKE %s" # change mytable to correct table name
     values = (search_term,)
 
     try:
         results = execute_query_in_transaction(query, master_node, values)
+        if not results:
+            master_node = db_configs[2]
+            results = execute_query_in_transaction(query, master_node, values)
         return render_template('read.html', results=results, is_button_disabled=is_button_disabled)
     except mysql.connector.Error as err:
         return str(err)
@@ -84,10 +89,9 @@ def update_data():
     values = (data['new_value'], data['id'])
     try:
         execute_query_in_transaction(query, master_node, values)
-        return render_template('index.html', is_button_disabled=is_button_disabled)
     except mysql.connector.Error as err:
         return str(err)
-    return 'Updated successfully'
+    return render_template('index.html', is_button_disabled=is_button_disabled)
 
 # Insert operation
 @app.route('/insert', methods=['POST'])
@@ -99,19 +103,30 @@ def insert_data():
     values = (data['value1'], data['value3'], data['value2'])  # Adjust the keys as needed
     try:
         execute_query_in_transaction(query, master_node, values)
-        return render_template('index.html', is_button_disabled=is_button_disabled)
     except mysql.connector.Error as err:
         return str(err)
-    return 'Inserted successfully'
+    return render_template('index.html', is_button_disabled=is_button_disabled)
 
 # Report operation
 @app.route('/report')
 def generate_report():
     is_button_disabled = False
     master_node = db_configs[0]
+    if (not is_node_online(db_configs[0])):
+        master_node = db_configs[1]
     query = "SELECT count(clinicid) AS NoOfClinics FROM clinics WHERE IsHospital = 'True'" # change mytable to correct table name
     try:
-        results = execute_query_in_transaction(query, master_node)
+        if (is_node_online(db_configs[0])):
+            results = execute_query_in_transaction(query, master_node)
+        else: 
+            # Execute the first query
+            result1 = execute_query_in_transaction(query, master_node)
+            master_node = db_configs[2]
+            # Execute the second query
+            result2 = execute_query_in_transaction(query, master_node)
+            value1 = result1[0][0] if result1 else 0  # Use 0 if result1 is empty
+            value2 = result2[0][0] if result2 else 0  # Use 0 if result2 is empty
+            results = value1 + value2
     except mysql.connector.Error as err:
         return str(err)
     return render_template('report.html', results=results, is_button_disabled=is_button_disabled)
