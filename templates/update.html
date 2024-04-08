@@ -26,6 +26,8 @@
         <button type="submit">Update Data</button>
     </form>
 
+    <h3>Updated Successfully!</h3>
+
     <h2>Insert Form</h2>
     <!-- Insert operation form -->
     <form action="/insert" method="POST">
@@ -44,11 +46,5 @@
         <button type="submit">Generate Report</button>
     </form>
     <!-- Display report results -->
-    {% if results %}
-    <h3>Generated Report</h3>
-    <span>There are </span>
-    <span>{{ results }}</span>
-    <span> clinics that is a hospital</span>
-    {% endif %}
 </body>
 </html>

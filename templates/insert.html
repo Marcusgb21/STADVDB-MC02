@@ -38,17 +38,13 @@
         <button type="submit">Insert Data</button>
     </form>
 
+    <h3>Inserted Successfully!</h3>
+
     <h2>Generate Report Form</h2>
     <!-- Generate Report operation form -->
     <form action="/report" method="GET">
         <button type="submit">Generate Report</button>
     </form>
     <!-- Display report results -->
-    {% if results %}
-    <h3>Generated Report</h3>
-    <span>There are </span>
-    <span>{{ results }}</span>
-    <span> clinics that is a hospital</span>
-    {% endif %}
 </body>
 </html>

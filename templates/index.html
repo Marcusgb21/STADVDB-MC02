@@ -13,11 +13,7 @@
     <form action="/read" method="GET">
         <label for="search_term">Search ID:</label>
         <input type="text" id="search_term" name="search_term" placeholder="Enter ID">
-        {% if is_button_disabled %}
-        <button type="submit" disabled>Search</button>
-        {% else %}
         <button type="submit">Search</button>
-        {% endif %}
     </form>
 
     <!-- Display search results -->
@@ -27,11 +23,7 @@
     <form action="/update" method="POST">
         <input type="text" name="id" placeholder="Enter ID">
         <input type="text" name="new_value" placeholder="Enter New Value">
-        {% if is_button_disabled %}
-        <button type="submit" disabled>Update Data</button>
-        {% else %}
         <button type="submit">Update Data</button>
-        {% endif %}
     </form>
 
     <h2>Insert Form</h2>
@@ -43,21 +35,13 @@
         <input type="text" id="value2" name="value2" placeholder="Enter Province">
         <label for="value3">IsHospital:</label>
         <input type="text" id="value3" name="value3" placeholder="Enter IsHospital">
-        {% if is_button_disabled %}
-        <button type="submit" disabled>Insert Data</button>
-        {% else %}
         <button type="submit">Insert Data</button>
-        {% endif %}
     </form>
 
     <h2>Generate Report Form</h2>
     <!-- Generate Report operation form -->
     <form action="/report" method="GET">
-        {% if is_button_disabled %}
-        <button type="submit" disabled>Generate Report</button>
-        {% else %}
         <button type="submit">Generate Report</button>
-        {% endif %}
     </form>
     <!-- Display report results -->
 </body>
